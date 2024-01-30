@@ -13,6 +13,11 @@ theme: /Cinema
     state: Hello
         q!: * (прив*/хай/ку/здравствуй*/здрасте/здрасьте/хэлоу/*даров*) *
         q!: * {~добрый * (~утро/~день/~вечер/~ночь/~время суток)} *
+        script:
+                $session.Name = undefined
+                $session.Price = undefined
+                $session.Plot = undefined
+                $session.TicketsNumber = undefined
         random:
             a: Привет!
             a: Рад видеть!
@@ -30,15 +35,20 @@ theme: /Cinema
         q: * (все/стоп/хватит/отстань/снова/отмена) * || fromState = /Cinema/SuggestMovie
         q: * (все/стоп/хватит/отстань/снова/отмена) * || fromState = /Cinema/HowManyTickets
         q!: * (все/стоп/хватит/отстань/снова/отмена) *
+        script:
+                $session.Name = undefined
+                $session.Price = undefined
+                $session.Plot = undefined
+                $session.TicketsNumber = undefined
         go!: /Cinema/Bye
     
     state: Plot
     # хочу сходить на пленницу, про что он
     # сюжет джентельменов удачи
     # о чем кавказская пленница?
-    # хочу купить билет на кавказскую пленницу, о чем он?
-        q!: * {~сюжет * ($GentlemenOfFortune/$CaucasianPrisoner)} *
-        q!: * {(про/о) (что/чем/чём) * ($GentlemenOfFortune/$CaucasianPrisoner)} *
+    # хочу купить билет на кавказскую пленницу, о чем она?
+        q!: * {~сюжет * ($GentlemenOfFortune/$CaucasianPrisoner)} * $weight<2.0>
+        q!: * {(про/о) (что/чем/чём) [он/она] * ($GentlemenOfFortune/$CaucasianPrisoner)} * $weight<2.0>
         script:
             $session.Name = GetMovieName($parseTree);
             $session.Plot = GetMoviePlot($parseTree);
@@ -117,6 +127,8 @@ theme: /Cinema
         go!: /Cinema/Check
         
     state: SuggestMovie
+        # как мне купить билет на фильм
+        # хочу приобрести билет на фильм
         q!: * {[~хотеть/~желать/как/нужно] * ($Buy) * ~билет} *
         random:
             a: На какой фильм хочешь сходить?
@@ -136,10 +148,14 @@ theme: /Cinema
         state: LocalCatchAll || noContext = true
             event: noMatch
             a: Такого фильма в прокате нет. Выбери, пожалуйста, фильм из списка
+            a: Или можешь ознакомиться с информацией на сайте https://LinkToTheCinemaWebsite
             go!: ..
             
     state: HowManyTickets || modal = true
+        # купить билет на фильм кавказская пленница
+        # хочу сходить на фильм джентельмены удачи
         q!: * {[~хотеть/~желать/как/нужно] * $Buy * ~билет на ($GentlemenOfFortune/$CaucasianPrisoner)} *
+        q!: * {[~хотеть/~желать/как/нужно] * (~сходить/~посмотреть/~глянуть/~сгонять) * ($GentlemenOfFortune/$CaucasianPrisoner)} *
         script:
             if (typeof $session.Name === "undefined") {
                 $session.Name = GetMovieName($parseTree);
@@ -176,7 +192,7 @@ theme: /Cinema
                 a: Отлично! Сейчас отправлю ссылку на оплату
                 a: Супер! Сейчас отправлю ссылку на оплату
                 a: Здорово! Лови ссылку на оплату
-            a: https://SomeLinkToPayForTheTickets
+            a: https://LinkToPayForTheTickets
             random:
                 a: Хорошего просмотра!
                 a: Надеюсь, фильм тебе понравится!
