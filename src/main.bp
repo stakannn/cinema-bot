@@ -19,5 +19,53 @@
     "id" : "/Match",
     "x" : 290,
     "y" : 2223
+  }, {
+    "id" : "/Cinema/Start",
+    "x" : 290,
+    "y" : 830
+  }, {
+    "id" : "/Cinema/Hello",
+    "x" : 1070,
+    "y" : 3569
+  }, {
+    "id" : "/Cinema/BotDescription",
+    "x" : 290,
+    "y" : 1470
+  }, {
+    "id" : "/Cinema/StopPurchase",
+    "x" : 1850,
+    "y" : 4748
+  }, {
+    "id" : "/Cinema/Plot",
+    "x" : 290,
+    "y" : 2187
+  }, {
+    "id" : "/Cinema/Price",
+    "x" : 290,
+    "y" : 3082
+  }, {
+    "id" : "/Cinema/InstantPurchase",
+    "x" : 290,
+    "y" : 5516
+  }, {
+    "id" : "/Cinema/SuggestMovie",
+    "x" : 1070,
+    "y" : 4380
+  }, {
+    "id" : "/Cinema/HowManyTickets",
+    "x" : 1070,
+    "y" : 5117
+  }, {
+    "id" : "/Cinema/Check",
+    "x" : 1070,
+    "y" : 5843
+  }, {
+    "id" : "/Cinema/Bye",
+    "x" : 2630,
+    "y" : 4748
+  }, {
+    "id" : "/Cinema/CatchAll",
+    "x" : 290,
+    "y" : 3997
   } ]
 }

@@ -40,9 +40,10 @@ theme: /Cinema
         q!: * {~сюжет * ($GentlemenOfFortune/$CaucasianPrisoner)} *
         q!: * {(про/о) (что/чем/чём) * ($GentlemenOfFortune/$CaucasianPrisoner)} *
         script:
-            $session.Movie = GetMovieName($parseTree)
-            $session.Plot = GetMoviePlot($parseTree)
-            var answer = "Сюжет фильма \"" + $session.Movie + "\":\n" + $session.Plot;
+            $session.Name = GetMovieName($parseTree);
+            $session.Plot = GetMoviePlot($parseTree);
+            $session.Price = GetMoviePrice($parseTree);
+            var answer = "Сюжет фильма \"" + $session.Name + "\":\n" + $session.Plot;
             $reactions.answer(answer);
         random:
             a: Нравится? Пойдешь смотреть?
@@ -54,15 +55,16 @@ theme: /Cinema
         state: GoodPlot
             q: * (да/ес/ага/агась/правильно/именно) *
             go!: /Cinema/HowManyTickets
-        
+            
         state: BadPlot
             q: * (не*) *
             random:
-                a: Ой! Не вышло. Давай попробуем снова
-                a: Не то? Сейчас точно получится, давай попробуем ещё раз
-                a: Где-то ошиблись! Бывает. Давай снова
-            go!: /Cinema/SuggestMovie
-            
+                a: Не то? Давай посмотрим, какие еще фильмы сейчас идут
+                a: Не понравился? Смотри, какие еще есть фильмы
+            buttons:
+                "Кавказская пленница - сюжет"
+                "Джентельмены удачи - сюжет"
+                
     state: Price
     # сколько стоят 2 билета на пленницу?
     # билет на джентельменов сколько стоит
@@ -73,14 +75,14 @@ theme: /Cinema
         q!: * {сколько (стоит/стоят) * [@duckling.number] * (~билет) [на] ($GentlemenOfFortune/$CaucasianPrisoner)} *
         q!: * {[какая/какова/какую] (~цена/~стоимость) * [@duckling.number] (~билет) [на] ($GentlemenOfFortune/$CaucasianPrisoner)} *
         script:
-            $session.Movie = GetMovieName($parseTree)
-            $session.Price = GetMoviePrice($parseTree)
+            $session.Name = GetMovieName($parseTree);
+            $session.Price = GetMoviePrice($parseTree);
             if (typeof $parseTree["_duckling.number"] != "undefined") {
                 $session.TicketsNumber = $parseTree["_duckling.number"];
                 var fullprice = $session.TicketsNumber * $session.Price;
-                var answer = "Один билет на фильм \"" + $session.Movie + "\" стоит " + $session.Price + ", а " + $session.TicketsNumber + " " + $nlp.conform("билет", $session.TicketsNumber) + " - " + fullprice;
+                var answer = "Один билет на фильм \"" + $session.Name + "\" стоит " + $session.Price + ", а " + $session.TicketsNumber + " " + $nlp.conform("билет", $session.TicketsNumber) + " - " + fullprice;
             } else {
-                var answer = "Один билет на фильм \"" + $session.Movie + "\" стоит " + $session.Price;
+                var answer = "Один билет на фильм \"" + $session.Name + "\" стоит " + $session.Price;
                 $session.TicketsNumber = 1;
             }
             $reactions.answer(answer);
@@ -109,9 +111,9 @@ theme: /Cinema
     # хочу купить два билета на "Джентельменов удачи"
         q!: * {[~хотеть/~желать/как/нужно] * $Buy @duckling.number ~билет на ($GentlemenOfFortune/$CaucasianPrisoner)} *
         script:
-            $session.Movie = GetMovieName($parseTree)
-            $session.TicketsNumber = $parseTree["_duckling.number"]
-            $session.MoviePrice = GetMoviePrice($parseTree)
+            $session.Name = GetMovieName($parseTree);
+            $session.TicketsNumber = $parseTree["_duckling.number"];
+            $session.Price = GetMoviePrice($parseTree);
         go!: /Cinema/Check
         
     state: SuggestMovie
@@ -127,8 +129,8 @@ theme: /Cinema
         state: ChooseMovie
             q: * ($GentlemenOfFortune/$CaucasianPrisoner) *
             script:
-                $session.Movie = GetMovieName($parseTree)
-                $session.Price = GetMoviePrice($parseTree)
+                $session.Name = GetMovieName($parseTree);
+                $session.Price = GetMoviePrice($parseTree);
             go!: /Cinema/HowManyTickets
             
         state: LocalCatchAll || noContext = true
@@ -139,9 +141,11 @@ theme: /Cinema
     state: HowManyTickets || modal = true
         q!: * {[~хотеть/~желать/как/нужно] * $Buy * ~билет на ($GentlemenOfFortune/$CaucasianPrisoner)} *
         script:
-            $session.Movie = GetMovieName($parseTree)
-            $session.Price = GetMoviePrice($parseTree)
-            var answer = "Один билет на фильм \"" + $session.Movie + "\" стоит " + $session.Price + ". Сколько билетов понадобится?";
+            if (typeof $session.Name === "undefined") {
+                $session.Name = GetMovieName($parseTree);
+                $session.Price = GetMoviePrice($parseTree);
+            }
+            var answer = "Один билет на фильм \"" + $session.Name + "\" стоит " + $session.Price + ". Сколько билетов понадобится?";
             $reactions.answer(answer);
         
         state: GetTicketsNumber
@@ -157,7 +161,7 @@ theme: /Cinema
             
     state: Check
         script:
-            var answer = $session.TicketsNumber + " " + $nlp.conform("билет", $session.TicketsNumber) + " по " + $session.MoviePrice + " на фильм \"" + $session.Movie + "\"";
+            var answer = $session.TicketsNumber + " " + $nlp.conform("билет", $session.TicketsNumber) + " по " + $session.Price + " на фильм \"" + $session.Name + "\"";
             $reactions.answer(answer);
         random:
             a: Всё верно?
@@ -180,6 +184,11 @@ theme: /Cinema
                 
         state: StartOver
             q: * (не*) *
+            script:
+                $session.Name = undefined
+                $session.Price = undefined
+                $session.Plot = undefined
+                $session.TicketsNumber = undefined
             random:
                 a: Ой! Не вышло. Давай попробуем снова
                 a: Не то? Сейчас точно получится, давай попробуем ещё раз
